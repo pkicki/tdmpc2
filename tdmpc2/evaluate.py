@@ -72,12 +72,15 @@ def evaluate(cfg: dict):
 		if not cfg.multitask:
 			task_idx = None
 		ep_rewards, ep_successes = [], []
+		actions = []
 		for i in range(cfg.eval_episodes):
+			actions.append([])
 			obs, done, ep_reward, t = env.reset(task_idx=task_idx), False, 0, 0
 			if cfg.save_video:
 				frames = [env.render()]
 			while not done:
 				action = agent.act(obs, t0=t==0, task=task_idx)
+				actions[-1].append(action)
 				obs, reward, done, info = env.step(action)
 				ep_reward += reward
 				t += 1
@@ -90,6 +93,8 @@ def evaluate(cfg: dict):
 					os.path.join(video_dir, f'{task}-{i}.mp4'), frames, fps=15)
 		ep_rewards = np.mean(ep_rewards)
 		ep_successes = np.mean(ep_successes)
+		print(actions)
+		assert False
 		if cfg.multitask:
 			scores.append(ep_successes*100 if task.startswith('mw-') else ep_rewards/10)
 		print(colored(f'  {task:<22}' \
